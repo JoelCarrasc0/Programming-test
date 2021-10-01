@@ -34,20 +34,21 @@ classdef DOFixer < handle
             [obj.ur,obj.vr,obj.vl]= obj.setFixedDOF();
         end
         
+        % FALTA POR CLARIFICAR
         function [ur,vr,vl] = setFixedDOF(obj)
             fixnod = obj.fixedNodes;
-            vr=zeros(size(fixnod,1),1);
-            vl=zeros(abs(size(fixnod,1)-obj.dim.ndof),1);
-            ur=zeros(size(fixnod,1),1);
-            aux=(1:obj.dim.ndof)';
-            for i=1:size(fixnod,1)
-                I=nod2dof(fixnod(i,1),fixnod(i,2),obj.dim.ni);
-                vr(i)=vr(i)+I;
-                ur(i)= ur(i)+fixnod(i,3);
+            vr = zeros(size(fixnod,1),1);
+            vl = zeros(abs(size(fixnod,1)-obj.dim.ndof),1);
+            ur = zeros(size(fixnod,1),1);
+            aux = (1:obj.dim.ndof)';
+            for i = 1:size(fixnod,1)
+                I = nod2dof(fixnod(i,1),fixnod(i,2),obj.dim.ni);
+                vr(i) = vr(i)+I;
+                ur(i) = ur(i)+fixnod(i,3);
             end
-            cont=1;
-            for j=1:obj.dim.ndof
-                w=0;
+            cont = 1;
+            for j = 1:obj.dim.ndof
+                w = 0;
                 for k=1:size(fixnod,1)
                     if aux(j)==vr(k)
                         w=1;

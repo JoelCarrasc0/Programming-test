@@ -33,14 +33,22 @@ classdef ExternalForceComputer < handle
         end
         
         function Fext = placeTheForce(obj)
-        %Assembly of the force matrix
-            fdata = obj.forces;
-            Fext=zeros(obj.dim.ndof,1);
-            for e=1:size(fdata,1)
-                I=nod2dof(fdata(e,1),fdata(e,2),obj.dim.ni);
-                Fext(I)=Fext(I)+fdata(e,3);
+            nNodeDOF = obj.dim.ni;
+            allDOF = obj.dim.ndof;
+            f = obj.forces;
+            Fext = zeros(allDOF,1);
+            for iForce = 1:size(f,1) 
+                nodeNumber = f(iForce,1);
+                direction = f(iForce,2);
+                module = f(iForce,3);
+                I = nod2dof(nodeNumber,direction,nNodeDOF);
+                Fext(I) = Fext(I)+module;
             end
         end
+        
+%         function I = setForceInRightDOF(nodeNumber,direction,nNodeDOF)
+%             I = nNodeDOF*(nodeNumber-1)+direction;
+%         end
 
     end
     

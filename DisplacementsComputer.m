@@ -11,6 +11,7 @@ classdef DisplacementsComputer < handle
         ur
         vl
         vr 
+        type
     end
     
     methods (Access = public)
@@ -31,9 +32,10 @@ classdef DisplacementsComputer < handle
             obj.dim = cParams.dim;
             obj.Fext = cParams.Fext;
             obj.KG = cParams.KG;
-            obj.ur = cParams.ur;
-            obj.vl = cParams.vl;
-            obj.vr = cParams.vr;
+            obj.ur = cParams.imposedDisplacements;
+            obj.vl = cParams.freeDOFs;
+            obj.vr = cParams.imposedDOFs;
+            obj.type = cParams.type;
         end
         
         function calculateNodeDisplacements(obj)
@@ -41,20 +43,17 @@ classdef DisplacementsComputer < handle
         end
         
         function u = computeDisplacements(obj)
-            K_LL=obj.KG(obj.vl,obj.vl);
-            K_LR=obj.KG(obj.vl,obj.vr);
-            K_RL=obj.KG(obj.vr,obj.vl);
-            K_RR=obj.KG(obj.vr,obj.vr);
-            Fext_L=obj.Fext(obj.vl,1);
-            Fext_R=obj.Fext(obj.vr,1);
-            %Resolution of the system of equations:
-            ul=K_LL\(Fext_L-K_LR*obj.ur);
-            R=K_RR*obj.ur+K_RL*ul-Fext_R;
-            %Unification of the displacements:
-            u=zeros(obj.dim.nne*obj.dim.ni,1);
-            u(obj.vl,1)=ul;
-            u(obj.vr,1)=obj.ur;
+            K_LL = obj.KG(obj.vl,obj.vl);
+            K_LR = obj.KG(obj.vl,obj.vr);
+            Fext_L = obj.Fext(obj.vl,1);
+            s.LHS = K_LL;
+            s.RHS = (Fext_L-K_LR*obj.ur);
+            s.type = obj.type;
+            ul = SystemSolver.create(s);
+            u(obj.vl,1) = ul;
+            u(obj.vr,1) = obj.ur;
         end 
     end
 end
 
+            

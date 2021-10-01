@@ -8,10 +8,16 @@ classdef GlobalStiffnessMatrix < handle
         Kel
         dim
         Td
-        nodalCoordinates
-        nodalConnectivities
-        materialProperties
-        materialConnectivities
+        x
+        Tn
+        matProp
+        Tmat
+        Ee
+        Ae
+        le
+        Ke
+        se
+        ce
     end
     
     methods (Access = public)
@@ -31,10 +37,10 @@ classdef GlobalStiffnessMatrix < handle
        function init(obj,cParams)
            obj.dim = cParams.dim;
            obj.Td = cParams.Td;
-           obj.nodalCoordinates = cParams.nodalCoordinates;
-           obj.materialProperties = cParams.materialProperties;
-           obj.materialConnectivities = cParams.materialConnectivities;
-           obj.nodalConnectivities = cParams.nodalConnectivities;
+           obj.x = cParams.nodalCoordinates;
+           obj.matProp = cParams.materialProperties;
+           obj.Tmat = cParams.materialConnectivities;
+           obj.Tn = cParams.nodalConnectivities;
        end
         
        function assembleTheGlobalStiffnessMatrix(obj)
@@ -42,45 +48,64 @@ classdef GlobalStiffnessMatrix < handle
            obj.KG = obj.assembleK();
        end
        
-       function Kel = calculateEveryBar(obj)
-           x=obj.nodalCoordinates;
-           mat=obj.materialProperties;
-           Tmat=obj.materialConnectivities;
-           Tn=obj.nodalConnectivities;
-           Kel = zeros(obj.dim.nne*obj.dim.ni,obj.dim.nne*obj.dim.ni,obj.dim.nel);
-           for e = 1:obj.dim.nel
-                %Computation of every element stiffness matrix
-                Ee=mat(Tmat(e),1);
-                Ae=mat(Tmat(e),2);
-                x1=x(Tn(e,1),1);
-                y1=x(Tn(e,1),2);
-                x2=x(Tn(e,2),1);
-                y2=x(Tn(e,2),2);
-                l=sqrt((x2-x1)^2+(y2-y1)^2);
-                se=(y2-y1)/l;
-                ce=(x2-x1)/l;
-                Ke=((Ee*Ae)/l).*[ce^2 ce*se -ce^2 -ce*se;
-                                ce*se se^2 -ce*se -se^2;
-                                -ce^2 -ce*se ce^2 ce*se;
-                                -ce*se -se^2 ce*se se^2];
-        
-                %Store every element matrix
-                for r=1:obj.dim.nne*obj.dim.ni
-                    for s=1:obj.dim.nne*obj.dim.ni
-                        Kel(r,s,e)=Ke(r,s);
+       function Kel = calculateEveryBar(obj) 
+           nBar = obj.dim.nel;
+           nBarNode = obj.dim.nne;
+           nNodeDOF = obj.dim.ni;
+           barDOFs = nNodeDOF*nBarNode;
+           Kel = zeros(barDOFs,barDOFs,nBar);
+           for iBar = 1:nBar
+               obj.computeBarProperties(iBar);
+               obj.computeBarLength(iBar);
+               obj.computeBarMatrix();
+               for iDOF = 1:barDOFs
+                    for jDOF = 1:barDOFs
+                        Kel(iDOF,jDOF,nBar) = obj.Ke(iDOF,jDOF);
                     end
                 end
             end
        end
        
+       function computeBarProperties(obj,iBar)
+           typeOfBar = obj.Tmat(iBar); 
+           obj.Ee = obj.matProp(typeOfBar,1);
+           obj.Ae = obj.matProp(typeOfBar,2);
+       end
+       
+       function computeBarLength(obj,iBar)
+           firstNodeNumber = obj.Tn(iBar,1);
+           secondNodeNumber = obj.Tn(iBar,2);
+           x1 = obj.x(firstNodeNumber,1);
+           y1 = obj.x(firstNodeNumber,2);
+           x2 = obj.x(secondNodeNumber,1);
+           y2 = obj.x(secondNodeNumber,2);
+           obj.le = sqrt((x2-x1)^2+(y2-y1)^2);
+           obj.se = (y2-y1)/obj.le;
+           obj.ce = (x2-x1)/obj.le;
+       end
+       
+       function computeBarMatrix(obj)
+           cos = obj.ce;
+           sin = obj.se;
+           obj.Ke =((obj.Ee*obj.Ae)/obj.le).*[cos^2 cos*sin -cos^2 -cos*sin;
+                                        cos*sin sin^2 -cos*sin -sin^2;
+                                        -cos^2 -cos*sin cos^2 cos*sin;
+                                        -cos*sin -sin^2 cos*sin sin^2];
+       end
+       
        function KG = assembleK(obj)
-           KG = zeros(obj.dim.ndof,obj.dim.ndof);
-           for e=1:obj.dim.nel
-                for i=1:obj.dim.nne*obj.dim.ni
-                    I=obj.Td(e,i);
-                    for j=1:obj.dim.nne*obj.dim.ni
-                        J=obj.Td(e,j);
-                        KG(I,J)=KG(I,J)+obj.Kel(i,j,e);
+           nBar = obj.dim.nel;
+           nBarNode = obj.dim.nne;
+           nNodeDOF = obj.dim.ni;
+           barDOFs = nNodeDOF*nBarNode;
+           allDOF = obj.dim.ndof;
+           KG = zeros(allDOF,allDOF);
+           for iBar = 1:nBar
+                for iDOF = 1:barDOFs
+                    rightRow = obj.Td(iBar,iDOF);
+                    for jDOF = 1:barDOFs
+                        rightCol = obj.Td(iBar,jDOF);
+                        KG(rightRow,rightCol) = KG(rightRow,rightCol)+obj.Kel(iDOF,jDOF,iBar);
                     end
                 end
            end

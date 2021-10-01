@@ -16,9 +16,10 @@ classdef StructureCalculator < handle
         Td
         KG
         Fext
-        ur
-        vr
-        vl
+        imposedDisplacements
+        imposedDOFs
+        freeDOFs
+        type
     end    
     
     methods (Access = public)
@@ -52,6 +53,7 @@ classdef StructureCalculator < handle
             obj.materialConnectivities = cParams.materialConnectivities;
             obj.forces = cParams.forces;
             obj.fixedNodes = cParams.fixedNodes;
+            obj.type = cParams.type;
         end
         
         function obtainDimensions(obj)
@@ -96,18 +98,19 @@ classdef StructureCalculator < handle
             s.fixedNodes = obj.fixedNodes;
             c = DOFixer(s);
             c.FixDOFs();
-            obj.ur = c.ur;
-            obj.vr = c.vr;
-            obj.vl = c.vl;  
+            obj.imposedDisplacements = c.ur;
+            obj.imposedDOFs = c.vr;
+            obj.freeDOFs = c.vl;  
         end
         
         function solveDisplacements(obj)
             s.dim = obj.dim;
             s.Fext = obj.Fext;
             s.KG = obj.KG;
-            s.ur = obj.ur;
-            s.vr = obj.vr;
-            s.vl = obj.vl;
+            s.imposedDisplacements = obj.imposedDisplacements;
+            s.imposedDOFs = obj.imposedDOFs;
+            s.freeDOFs = obj.freeDOFs;
+            s.type = obj.type;
             c = DisplacementsComputer(s);
             c.obtainNodeDisplacements();
             obj.displacements = c.displacements;        

@@ -85,12 +85,13 @@ cParams.fixedNodes = [1,1,0;
                       5,1,0;
                       5,2,0
                       ];
+cParams.type = 'DIRECT';
 
 %% SOLVER
 structure = StructureCalculator(cParams);
 structure.solveStructure();
 structure.verifySolutions();
-% structure.plotDeformedStructure();
+
 
 
 
