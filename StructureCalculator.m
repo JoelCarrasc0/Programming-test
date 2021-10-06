@@ -7,19 +7,14 @@ classdef StructureCalculator < handle
     
     properties (Access = private)
         dim
-        nodalCoordinates
-        nodalConnectivities
-        materialProperties
-        materialConnectivities
+        nodes
+        material
         forces
-        fixedNodes
+        type
         Td
         KG
         Fext
-        imposedDisplacements
-        imposedDOFs
-        freeDOFs
-        type
+        restrictions
     end    
     
     methods (Access = public)
@@ -47,41 +42,36 @@ classdef StructureCalculator < handle
     methods (Access = private)
         
         function init(obj,cParams)
-            obj.nodalCoordinates = cParams.nodalCoordinates;
-            obj.nodalConnectivities = cParams.nodalConnectivities;
-            obj.materialProperties = cParams.materialProperties;
-            obj.materialConnectivities = cParams.materialConnectivities;
+            obj.nodes = cParams.nodes;
+            obj.material = cParams.material;
             obj.forces = cParams.forces;
-            obj.fixedNodes = cParams.fixedNodes;
             obj.type = cParams.type;
         end
         
         function obtainDimensions(obj)
-            obj.dim.nd = size(obj.nodalCoordinates,2);      
-            obj.dim.nel = size(obj.nodalConnectivities,1);  
-            obj.dim.nnod = size(obj.nodalCoordinates,1);    
-            obj.dim.nne = size(obj.nodalConnectivities,2);  
+            obj.dim.nd = size(obj.nodes.Coordinates,2);      
+            obj.dim.nel = size(obj.nodes.Connectivities,1);  
+            obj.dim.nnod = size(obj.nodes.Coordinates,1);    
+            obj.dim.nne = size(obj.nodes.Connectivities,2);  
             obj.dim.ni = 2;                                     
             obj.dim.ndof = obj.dim.nnod*obj.dim.ni;             
         end
         
         function connectBarsDOFs(obj)
             s.dim = obj.dim;
-            s.nodalConnectivities = obj.nodalConnectivities;
+            s.nodes = obj.nodes;
             c = DofComputer(s);
-            c.computeConnectivity()
+            c.computeConnectivity();
             obj.Td = c.Td; 
         end
         
         function computeStiffnessMatrix(obj)
             s.dim = obj.dim;
             s.Td = obj.Td;
-            s.nodalCoordinates = obj.nodalCoordinates;
-            s.materialProperties = obj.materialProperties;
-            s.materialConnectivities = obj.materialConnectivities;
-            s.nodalConnectivities = obj.nodalConnectivities;
+            s.nodes = obj.nodes;
+            s.material = obj.material;
             c = GlobalStiffnessMatrix(s);
-            c.computeTheGlobalStiffnessMatrix();
+            c.computeKG();
             obj.KG = c.KG;     
         end
         
@@ -89,39 +79,35 @@ classdef StructureCalculator < handle
             s.dim = obj.dim;
             s.forces = obj.forces;
             c = ExternalForceComputer(s);
-            c.placeTheExternalForce()
+            c.placeFext();
             obj.Fext = c.Fext;
         end
         
         function computeFixDOF(obj)
             s.dim = obj.dim;
-            s.fixedNodes = obj.fixedNodes;
+            s.nodes = obj.nodes;
             c = DOFixer(s);
-            c.FixDOFs();
-            obj.imposedDisplacements = c.ur;
-            obj.imposedDOFs = c.vr;
-            obj.freeDOFs = c.vl;  
+            c.computeRestrictions();
+            obj.restrictions.imposedU = c.ur;
+            obj.restrictions.imposedDOFs = c.vr;
+            obj.restrictions.freeDOFs = c.vl;  
         end
         
         function solveDisplacements(obj)
             s.dim = obj.dim;
             s.Fext = obj.Fext;
             s.KG = obj.KG;
-            s.imposedDisplacements = obj.imposedDisplacements;
-            s.imposedDOFs = obj.imposedDOFs;
-            s.freeDOFs = obj.freeDOFs;
+            s.restrictions = obj.restrictions;
             s.type = obj.type;
             c = DisplacementsComputer(s);
-            c.obtainNodeDisplacements();
+            c.computeU();
             obj.displacements = c.displacements;        
         end
 
         function solveStress(obj)
             s.dim = obj.dim;
-            s.nodalCoordinates = obj.nodalCoordinates;
-            s.materialProperties = obj.materialProperties;
-            s.materialConnectivities = obj.materialConnectivities;
-            s.nodalConnectivities = obj.nodalConnectivities;
+            s.nodes = obj.nodes;
+            s.material = obj.material;
             s.Td = obj.Td;
             s.displacements = obj.displacements;
             c = StressesComputer(s);

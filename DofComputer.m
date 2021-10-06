@@ -6,7 +6,7 @@ classdef DofComputer < handle
     
     properties (Access = private)
         dim
-        Tn
+        nodes
     end
    
     methods (Access = public)
@@ -16,7 +16,7 @@ classdef DofComputer < handle
         end
         
         function computeConnectivity(obj)
-            obj.obtainStructureConnectivityMatrix();
+            obj.calculate();
         end
 
     end
@@ -25,10 +25,10 @@ classdef DofComputer < handle
         
        function init(obj,cParams)
             obj.dim = cParams.dim;
-            obj.Tn = cParams.nodalConnectivities;
+            obj.nodes = cParams.nodes;
        end
        
-       function obtainStructureConnectivityMatrix(obj)
+       function calculate(obj)
            obj.Td = obj.connectDOF();
        end
        
@@ -37,26 +37,18 @@ classdef DofComputer < handle
            nBarNode = obj.dim.nne;
            nNodeDOF = obj.dim.ni;
            barDOFs = nNodeDOF*nBarNode;
+           Tn = obj.nodes.Connectivities;
            Td = zeros(nBar,barDOFs);
             for iBar = 1:nBar
                 for iNode = 1:nBarNode
                     for iDOF = 1:nNodeDOF
                         I = nod2dof(iNode,iDOF,nNodeDOF);
-                        nodeNumber = obj.Tn(iBar,iNode);
+                        nodeNumber = Tn(iBar,iNode);
                         Td(iBar,I) = nod2dof(nodeNumber,iDOF,nNodeDOF);
                     end
                 end
             end
        end
-       
-%        function I = obtainDOFmatrixColumns(iNode,iDOF,nNodeDOF)
-%            I = nNodeDOF*(iNode-1)+iDOF;
-%        end
-%        
-%        function Td = computeDOFnumberConnection(nodeNumber,iDOF,nNodeDOF)
-%            Td = nNodeDOF*(nodeNumber-1)+iDOF;
-%        end
-        
     end
 end
 

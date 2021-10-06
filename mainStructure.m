@@ -26,7 +26,7 @@ rho = 3100;
 
 %% PREPROCESS (Definition of cParams)
 % Nodal coordinates matrix
-cParams.nodalCoordinates = [L1,    H1;
+cParams.nodes.Coordinates = [L1,    H1;
                             L2,    H2;
                             L3,    H3;
                             L4,    H4;
@@ -36,7 +36,7 @@ cParams.nodalCoordinates = [L1,    H1;
                             L8,    H8
                             ];
 % Nodal connectivities matrix
-cParams.nodalConnectivities = [1 2;
+cParams.nodes.Connectivities = [1 2;
                                2 3;
                                3 4;
                                5 6;
@@ -54,9 +54,9 @@ cParams.nodalConnectivities = [1 2;
                                4 8   
                                ];
 % Material properties matrix
-cParams.materialProperties = [E A rho];
+cParams.material.Properties = [E A rho];
 % Material connectivities matrix
-cParams.materialConnectivities = [1;
+cParams.material.Connectivities = [1;
                                   1;
                                   1;
                                   1;
@@ -80,7 +80,7 @@ cParams.forces = [2,2,F;
                   4,2,F
                   ];
 % Fixed nodes matrix (number of node, direction, magnitude)
-cParams.fixedNodes = [1,1,0;
+cParams.nodes.fixed = [1,1,0;
                       1,2,0;
                       5,1,0;
                       5,2,0

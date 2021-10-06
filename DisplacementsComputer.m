@@ -8,9 +8,7 @@ classdef DisplacementsComputer < handle
         dim
         Fext
         KG
-        ur
-        vl
-        vr 
+        restrictions
         type
     end
     
@@ -20,8 +18,8 @@ classdef DisplacementsComputer < handle
             obj.init(cParams);
         end
         
-        function obtainNodeDisplacements(obj)
-            obj.calculateNodeDisplacements();
+        function computeU(obj)
+            obj.calculate();
         end
         
     end
@@ -32,26 +30,28 @@ classdef DisplacementsComputer < handle
             obj.dim = cParams.dim;
             obj.Fext = cParams.Fext;
             obj.KG = cParams.KG;
-            obj.ur = cParams.imposedDisplacements;
-            obj.vl = cParams.freeDOFs;
-            obj.vr = cParams.imposedDOFs;
+            obj.restrictions = cParams.restrictions;
             obj.type = cParams.type;
         end
         
-        function calculateNodeDisplacements(obj)
+        function calculate(obj)
             obj.displacements = obj.computeDisplacements();
         end
         
         function u = computeDisplacements(obj)
-            K_LL = obj.KG(obj.vl,obj.vl);
-            K_LR = obj.KG(obj.vl,obj.vr);
-            Fext_L = obj.Fext(obj.vl,1);
+            vr = obj.restrictions.imposedDOFs;
+            vl = obj.restrictions.freeDOFs;
+            ur = obj.restrictions.imposedU;
+            K_LL = obj.KG(vl,vl);
+            K_LR = obj.KG(vl,vr);
+            Fext_L = obj.Fext(vl,1);
             s.LHS = K_LL;
-            s.RHS = (Fext_L-K_LR*obj.ur);
+            s.RHS = (Fext_L-K_LR*ur);
             s.type = obj.type;
-            ul = SystemSolver.create(s);
-            u(obj.vl,1) = ul;
-            u(obj.vr,1) = obj.ur;
+            solver = SystemSolver.create(s);
+            ul = solver.solution();
+            u(vl,1) = ul;
+            u(vr,1) = ur;
         end 
     end
 end

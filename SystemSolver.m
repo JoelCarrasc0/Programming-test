@@ -12,9 +12,7 @@ classdef SystemSolver < handle
     methods (Access = public, Static)
         
         function obj = create(cParams)
-%             f = SolverFactory();
-%             obj = f.create(cParams);
-            obj = SolverFactory.create(cParams);
+            obj = SolverFactory.create(cParams);            
             obj.compute();
         end
         

@@ -8,7 +8,7 @@ classdef DOFixer < handle
     
     properties (Access = private)
         dim
-        fixedNodes
+        nodes
     end
     
     methods (Access = public)
@@ -17,8 +17,9 @@ classdef DOFixer < handle
             obj.init(cParams);
         end
         
-        function FixDOFs(obj)
+        function computeRestrictions(obj)
             obj.computeRestrictedDOF();
+            obj.computeFreeDOFs();
         end
 
     end
@@ -27,39 +28,46 @@ classdef DOFixer < handle
         
         function init(obj,cParams)
             obj.dim = cParams.dim;
-            obj.fixedNodes = cParams.fixedNodes;
+            obj.nodes = cParams.nodes;
         end
         
         function computeRestrictedDOF(obj)
-            [obj.ur,obj.vr,obj.vl]= obj.setFixedDOF();
+            nNodeDOF = obj.dim.ni;
+            fixnod = obj.nodes.fixed;
+            resDOF = size(fixnod,1);
+            obj.vr = zeros(resDOF,1);
+            obj.ur = zeros(resDOF,1);
+            for iRDOF = 1:resDOF
+                iNode = fixnod(iRDOF,1);
+                iDir = fixnod(iRDOF,2);
+                iMod = fixnod(iRDOF,3);
+                I = nod2dof(iNode,iDir,nNodeDOF);
+                obj.vr(iRDOF) = obj.vr(iRDOF)+I;
+                obj.ur(iRDOF) = obj.ur(iRDOF)+iMod;
+            end
         end
         
-        % FALTA POR CLARIFICAR
-        function [ur,vr,vl] = setFixedDOF(obj)
-            fixnod = obj.fixedNodes;
-            vr = zeros(size(fixnod,1),1);
-            vl = zeros(abs(size(fixnod,1)-obj.dim.ndof),1);
-            ur = zeros(size(fixnod,1),1);
-            aux = (1:obj.dim.ndof)';
-            for i = 1:size(fixnod,1)
-                I = nod2dof(fixnod(i,1),fixnod(i,2),obj.dim.ni);
-                vr(i) = vr(i)+I;
-                ur(i) = ur(i)+fixnod(i,3);
-            end
+        function computeFreeDOFs(obj)
+            fixnod = obj.nodes.fixed;
+            allDOF = obj.dim.ndof;
+            resDOF = size(fixnod,1);
+            nonResDOF = abs(resDOF-allDOF);
+            obj.vl = zeros(nonResDOF,1);
+            aux = (1:allDOF)';
             cont = 1;
-            for j = 1:obj.dim.ndof
-                w = 0;
-                for k=1:size(fixnod,1)
-                    if aux(j)==vr(k)
-                        w=1;
+            for iDOF = 1:allDOF
+                bool = 0;
+                for iRDOF = 1:resDOF
+                    if aux(iDOF) == obj.vr(iRDOF)
+                        bool = 1;
                     end
                 end
-                if w==0
-                    vl(cont)=aux(j);
-                    cont=cont+1;
+                if bool == 0
+                    obj.vl(cont) = aux(iDOF);
+                    cont = cont+1;
                 end
             end
-        end 
+        end
     end
 end
 

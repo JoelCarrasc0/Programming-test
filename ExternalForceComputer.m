@@ -15,8 +15,8 @@ classdef ExternalForceComputer < handle
             obj.init(cParams);
         end
         
-        function placeTheExternalForce(obj)
-            obj.setForce();
+        function placeFext(obj)
+            obj.compute();
         end
 
     end
@@ -28,27 +28,23 @@ classdef ExternalForceComputer < handle
             obj.forces = cParams.forces;
         end
         
-        function setForce(obj)
-            obj.Fext = obj.placeTheForce();
+        function compute(obj)
+            obj.Fext = obj.placeF();
         end
         
-        function Fext = placeTheForce(obj)
+        function Fext = placeF(obj)
             nNodeDOF = obj.dim.ni;
             allDOF = obj.dim.ndof;
             f = obj.forces;
             Fext = zeros(allDOF,1);
             for iForce = 1:size(f,1) 
-                nodeNumber = f(iForce,1);
-                direction = f(iForce,2);
-                module = f(iForce,3);
-                I = nod2dof(nodeNumber,direction,nNodeDOF);
-                Fext(I) = Fext(I)+module;
+                iNode = f(iForce,1);
+                iDir = f(iForce,2);
+                iMod = f(iForce,3);
+                I = nod2dof(iNode,iDir,nNodeDOF);
+                Fext(I) = Fext(I)+iMod;
             end
         end
-        
-%         function I = setForceInRightDOF(nodeNumber,direction,nNodeDOF)
-%             I = nNodeDOF*(nodeNumber-1)+direction;
-%         end
 
     end
     
