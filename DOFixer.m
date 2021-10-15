@@ -11,12 +11,17 @@ classdef DOFixer < handle
         nodes
     end
     
-    methods (Access = public)
-        
-        function obj = DOFixer(cParams)
-            obj.init(cParams);
+    methods (Access = public, Static)
+                
+        function obj = create(cParams)
+            obj = DOFixerTester(cParams);            
+            obj.verify();
         end
         
+    end
+    
+    methods (Access = public)
+
         function computeRestrictions(obj)
             obj.computeRestrictedDOF();
             obj.computeFreeDOFs();
@@ -24,7 +29,7 @@ classdef DOFixer < handle
 
     end
     
-    methods (Access = private)
+    methods (Access = protected)
         
         function init(obj,cParams)
             obj.dim = cParams.dim;
@@ -68,6 +73,12 @@ classdef DOFixer < handle
                 end
             end
         end
+    end
+    
+    methods (Access = protected, Abstract)
+        
+        verify(obj);
+        
     end
 end
 

@@ -4,16 +4,21 @@ classdef DofComputer < handle
         Td
     end
     
-    properties (Access = private)
+    properties (Access = protected)
         dim
         nodes
     end
    
-    methods (Access = public)
-        
-        function obj = DofComputer(cParams)
-            obj.init(cParams);
+    methods (Access = public, Static)
+                
+        function obj = create(cParams)
+            obj = TdTester(cParams);            
+            obj.verify();
         end
+        
+    end
+    
+    methods (Access = public)
         
         function computeConnectivity(obj)
             obj.calculate();
@@ -21,7 +26,7 @@ classdef DofComputer < handle
 
     end
     
-     methods (Access = private)
+     methods (Access = protected)
         
        function init(obj,cParams)
             obj.dim = cParams.dim;
@@ -49,6 +54,12 @@ classdef DofComputer < handle
                 end
             end
        end
-    end
+     end
+    
+     methods (Access = protected, Abstract)
+        
+        verify(obj);
+        
+     end
 end
 

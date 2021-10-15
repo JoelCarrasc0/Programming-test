@@ -46,9 +46,9 @@ classdef StressesComputer < handle
             c = obj.obtainLocalProperties();
             sig = zeros(nBar,1);
             for iBar = 1:nBar
-                Ee = c.Ee(nBar);
-                le = c.le(nBar);
-                Re = c.Re(:,:,nBar);
+                Ee = c.Ee(iBar);
+                le = c.le(iBar);
+                Re = c.Re(:,:,iBar);
                 ue = zeros(barDOFs,1);
                 for iDOF = 1:barDOFs
                     dofNumber = obj.Td(iBar,iDOF);

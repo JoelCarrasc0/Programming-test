@@ -12,19 +12,24 @@ classdef GlobalStiffnessMatrix < handle
         material
     end
     
-    methods (Access = public)
+    methods (Access = public, Static)
+                
+        function obj = create(cParams)
+            obj = KGTester(cParams);            
+            obj.verify();
+        end
         
-       function obj = GlobalStiffnessMatrix(cParams)
-            obj.init(cParams);
-       end
-       
+    end
+    
+    methods (Access = public)
+
        function computeKG(obj)
            obj.compute();
        end
  
     end
     
-    methods (Access = private)
+    methods (Access = protected)
         
        function init(obj,cParams)
            obj.dim = cParams.dim;
@@ -66,5 +71,11 @@ classdef GlobalStiffnessMatrix < handle
             end
         end
     end
+    
+     methods (Access = protected, Abstract)
+        
+        verify(obj);
+        
+     end
 end
 

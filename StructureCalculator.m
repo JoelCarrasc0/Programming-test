@@ -32,11 +32,6 @@ classdef StructureCalculator < handle
             obj.solveDisplacements();
             obj.solveStress();
         end
-        
-        function verifySolutions(obj)
-            obj.checkResults();
-        end
-        
     end
     
     methods (Access = private)
@@ -60,8 +55,7 @@ classdef StructureCalculator < handle
         function connectBarsDOFs(obj)
             s.dim = obj.dim;
             s.nodes = obj.nodes;
-            c = DofComputer(s);
-            c.computeConnectivity();
+            c = DofComputer.create(s);
             obj.Td = c.Td; 
         end
         
@@ -70,24 +64,21 @@ classdef StructureCalculator < handle
             s.Td = obj.Td;
             s.nodes = obj.nodes;
             s.material = obj.material;
-            c = GlobalStiffnessMatrix(s);
-            c.computeKG();
+            c = GlobalStiffnessMatrix.create(s);
             obj.KG = c.KG;     
         end
         
         function computeExternalForces(obj)
             s.dim = obj.dim;
             s.forces = obj.forces;
-            c = ExternalForceComputer(s);
-            c.placeFext();
+            c = ExternalForceComputer.create(s);
             obj.Fext = c.Fext;
         end
         
         function computeFixDOF(obj)
             s.dim = obj.dim;
             s.nodes = obj.nodes;
-            c = DOFixer(s);
-            c.computeRestrictions();
+            c = DOFixer.create(s);
             obj.restrictions.imposedU = c.ur;
             obj.restrictions.imposedDOFs = c.vr;
             obj.restrictions.freeDOFs = c.vl;  
@@ -113,10 +104,6 @@ classdef StructureCalculator < handle
             c = StressesComputer(s);
             c.obtainStresses();
             obj.stress = c.stress;  
-        end
-        
-        function checkResults(obj)
-            lookForMistakes(obj);
         end
     end
 end
