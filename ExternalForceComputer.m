@@ -9,22 +9,19 @@ classdef ExternalForceComputer < handle
         forces    
     end
     
-    methods (Access = public, Static)
-        function obj = create(cParams)
-            obj = FextTester(cParams);            
-            obj.verify();
-        end
-    end
-    
     methods (Access = public)
+        
+        function obj = ExternalForceComputer(cParams)
+            obj.init(cParams)
+        end
         
         function placeFext(obj)
             obj.compute();
         end
         
     end
-    
-    methods (Access = protected)
+
+    methods (Access = private)
         
         function init(obj,cParams)
             obj.dim = cParams.dim;
@@ -48,14 +45,6 @@ classdef ExternalForceComputer < handle
                 Fext(I) = Fext(I)+iMod;
             end
         end
-
     end
-    
-    methods (Access = protected, Abstract)
-        
-        verify(obj);
-        
-    end
-    
 end
 

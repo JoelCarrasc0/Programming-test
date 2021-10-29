@@ -8,7 +8,7 @@ classdef StressesComputer < handle
        dim
        material
        nodes
-       displacements
+       u
        Td
     end
     
@@ -31,7 +31,7 @@ classdef StressesComputer < handle
             obj.nodes = cParams.nodes;
             obj.material = cParams.material;
             obj.Td = cParams.Td;
-            obj.displacements = cParams.displacements;
+            obj.u = cParams.u;
         end
         
         function compute(obj)
@@ -52,7 +52,7 @@ classdef StressesComputer < handle
                 ue = zeros(barDOFs,1);
                 for iDOF = 1:barDOFs
                     dofNumber = obj.Td(iBar,iDOF);
-                    ue(iDOF,1) = obj.displacements(dofNumber);
+                    ue(iDOF,1) = obj.u(dofNumber);
                 end
                 ue_local = Re*ue;
                 epsilon = 1/le*[-1 0 1 0]*ue_local;

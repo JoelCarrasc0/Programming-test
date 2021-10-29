@@ -1,41 +1,32 @@
+%% PRUEBA DE CLASE MADRE QUE SUSTENTA LOS METODOS DE TODAS LAS CLASES TEST
 classdef Tester < handle
-    
-    properties (Access = public)
-        data
-        stress
-        displacements
-    end
-    
-    methods (Access = public)
 
-        function obj = Tester()
-            obj.data = load('Tester\cParams.mat');
-            solution = StructureCalculator(obj.data.cParams);
-            solution.solveStructure();
-            obj.displacements = solution.displacements;
-            obj.stress = solution.stress;
-            obj.verifysolutions();
+    properties (Access = protected)
+        initialData
+        correctSolutions
+    end
+    
+    methods (Access = public, Static)
+        
+        function obj = create(cParams)
+            obj = SolverFactory.create(cParams);            
+            obj.compute();
         end
         
     end
     
-    methods (Access = private)
+    methods (Access = protected)
         
-        function verifysolutions(obj)
-            u = load('Tester\u.mat');
-            sig = load('Tester\sig.mat');
-                if (u.displacements == obj.displacements) 
-                    cprintf('green', 'Test pass (Correct Displacements).\n');
-                else
-                    cprintf('red', 'Test NO pass (Wrong Displacements).\n');
-                end
-   
-                if(sig.stresses == obj.stress)
-                    cprintf('green', 'Test pass (Correct Stresses).\n');
-                else
-                    cprintf('red', 'Test NO pass (Wrong Stresses).\n');
-                end
+        function init(obj)
+            obj.initialData = load('Tester\cParams.mat');
+            obj.correctSolutions = load('Tester\cParams.mat');
         end
+        
+        function verify(obj)
+            
+        end
+        
     end
     
 end
+

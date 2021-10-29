@@ -1,4 +1,20 @@
-classdef KGTester < GlobalStiffnessMatrix
+classdef GlobalStiffnesMatrixTester < handle
+    
+    properties (Access = public)
+        data
+        KG
+    end
+    
+    methods (Access = public)
+
+        function obj = DOFComputerTester(D0,PD)
+            obj.data = D0.cParams;
+            obj.data.dim = PD.dim;
+            obj.obtainCalculatedData();
+            obj.verifysolutions();
+        end
+        
+    end
     
     methods (Access = public)
         function obj = KGTester(cParams)

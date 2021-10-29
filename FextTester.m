@@ -1,4 +1,4 @@
-classdef FextTester < ExternalForceComputer
+classdef ExternalForceComputerTester < handle
     
     methods (Access = public)
         function obj = FextTester(cParams)

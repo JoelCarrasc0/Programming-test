@@ -55,7 +55,8 @@ classdef StructureCalculator < handle
         function connectBarsDOFs(obj)
             s.dim = obj.dim;
             s.nodes = obj.nodes;
-            c = DofComputer.create(s);
+            c = DofComputer(s);
+            c.computeConnectivity();
             obj.Td = c.Td; 
         end
         
@@ -64,21 +65,24 @@ classdef StructureCalculator < handle
             s.Td = obj.Td;
             s.nodes = obj.nodes;
             s.material = obj.material;
-            c = GlobalStiffnessMatrix.create(s);
+            c = GlobalStiffnessMatrix(s);
+            c.computeKG();
             obj.KG = c.KG;     
         end
         
         function computeExternalForces(obj)
             s.dim = obj.dim;
             s.forces = obj.forces;
-            c = ExternalForceComputer.create(s);
+            c = ExternalForceComputer(s);
+            c.placeFext();
             obj.Fext = c.Fext;
         end
         
         function computeFixDOF(obj)
             s.dim = obj.dim;
             s.nodes = obj.nodes;
-            c = DOFixer.create(s);
+            c = DOFixer(s);
+            c.computeRestrictions();
             obj.restrictions.imposedU = c.ur;
             obj.restrictions.imposedDOFs = c.vr;
             obj.restrictions.freeDOFs = c.vl;  
@@ -100,7 +104,7 @@ classdef StructureCalculator < handle
             s.nodes = obj.nodes;
             s.material = obj.material;
             s.Td = obj.Td;
-            s.displacements = obj.displacements;
+            s.u = obj.displacements;
             c = StressesComputer(s);
             c.obtainStresses();
             obj.stress = c.stress;  
